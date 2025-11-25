@@ -1,0 +1,547 @@
+/* --- VARIABLES GLOBALES --- */
+:root {
+    --joji-bg-start: #fbfaff;
+    --joji-bg-end: #f4f7ff;
+    --joji-primary-text: #333;
+    --joji-secondary-text: #666;
+    --joji-gradient: linear-gradient(135deg, #FFB6C1, #C3A6EE, #A0B3F7);
+    --joji-card-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    --joji-card-radius: 20px;
+    
+    /* Colores Específicos de EJERCICIOS */
+    --ex-color-primary: #A0B3F7; 
+    --ex-color-secondary: #7AD3A8; 
+    --ex-color-tertiary: #FFC977; 
+    --ex-color-suggest: #E8E5FF; 
+    --ex-color-filter-active: #333;
+    --cal-color: #A0B3F7; 
+    --prot-color: #6DC3A3; 
+    --carb-color: #FFD966; 
+    --fat-color: #FF9640; 
+    --food-filter-active: #C3A6EE;
+}
+
+/* --- BASE Y LAYOUT GENERAL --- */
+body {
+    font-family: 'Montserrat', sans-serif;
+    background: linear-gradient(135deg, var(--joji-bg-start), var(--joji-bg-end));
+    margin: 0;
+    padding: 0;
+    color: var(--joji-primary-text);
+    min-height: 100vh;
+}
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 0 20px;
+}
+
+.joji-card {
+    background-color: white;
+    border-radius: var(--joji-card-radius);
+    padding: 30px;
+    box-shadow: var(--joji-card-shadow);
+    margin-bottom: 25px;
+}
+
+.joji-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+}
+/* Animación de Contenido de Pestañas */
+.tab-content {
+    display: none; 
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out; 
+}
+
+.tab-content.visible {
+    display: block; 
+    opacity: 1;
+}
+
+
+/* --- HEADER Y NAVEGACIÓN SUP --- */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background-color: white;
+    box-shadow: var(--joji-card-shadow);
+    margin-bottom: 20px;
+}
+
+.header .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px;
+    font-weight: 700;
+    background-image: var(--joji-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header .user-info {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.header .logout {
+    margin-left: 20px;
+    text-decoration: none;
+    color: #888;
+    transition: color 0.3s;
+}
+
+.header .logout:hover {
+    color: var(--joji-primary-text);
+}
+
+/* NAV TABS */
+.nav-tabs {
+    display: flex;
+    justify-content: center;
+    background-color: white;
+    padding: 0 40px;
+    border-bottom: 1px solid #eee;
+}
+
+.nav-tabs button,
+.nav-tabs .nav-link { 
+    background: none;
+    border: none;
+    padding: 15px 30px;
+    cursor: pointer;
+    font-size: 15px;
+    color: var(--joji-secondary-text);
+    position: relative;
+    transition: color 0.3s;
+    font-weight: 500;
+    text-decoration: none;
+    display: flex; 
+    align-items: center;
+}
+
+.nav-tabs i {
+    margin-right: 8px;
+}
+
+/* Selector para la pestaña activa */
+.nav-tabs .active { 
+    color: var(--joji-primary-text);
+    font-weight: 600;
+}
+
+.nav-tabs .active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: linear-gradient(to right, #C3A6EE, #A0B3F7);
+}
+/* --- PERFIL / DASHBOARD ESPECÍFICOS --- */
+.grid-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.chart-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* Tarjeta de Perfil */
+.profile-card .avatar {
+    width: 100px; height: 100px; border-radius: 50%; background: var(--joji-gradient);
+    display: flex; justify-content: center; align-items: center; margin: 0 auto 15px;
+    color: white; font-size: 40px; font-weight: 700;
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.5), 0 0 0 8px rgba(195, 166, 238, 0.3);
+}
+
+.profile-card .name { text-align: center; font-size: 18px; font-weight: 600; margin-bottom: 5px; }
+.profile-card .email { text-align: center; color: var(--joji-secondary-text); font-size: 13px; margin-bottom: 20px; }
+
+.profile-card .edit-btn {
+    display: block; width: 100%; padding: 12px; border: none; border-radius: 12px; background: var(--joji-gradient);
+    color: white; font-size: 15px; font-weight: 600; cursor: pointer; margin: 20px 0; transition: opacity 0.3s;
+    text-decoration: none; text-align: center;
+}
+.profile-card .edit-btn:hover { opacity: 0.9; }
+
+.profile-details div {
+    display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f5f5f5; font-size: 14px;
+}
+.profile-details span:last-child { font-weight: 600; }
+
+.not-set { color: #999; font-weight: 500 !important; }
+.imc-badge {
+    background-color: #A0B3F7; color: white; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700;
+}
+.imc-badge.empty { background-color: #ddd; color: #666; }
+
+/* Tarjeta de Estadísticas */
+.stats-card p { color: var(--joji-secondary-text); font-size: 14px; margin-bottom: 25px; }
+
+.stats-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px;
+}
+
+.stat-mini-card {
+    border-radius: 15px; padding: 15px 20px; color: white; font-weight: 500; min-height: 80px;
+    display: flex; flex-direction: column; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.stat-mini-card.tren { background: linear-gradient(135deg, #a0b3f7, #c3a6ee); }
+.stat-mini-card.meta { background: linear-gradient(135deg, #7ad3a8, #4fc57b); }
+.stat-mini-card.cal { background: linear-gradient(135deg, #ffc977, #ff9640); }
+
+.stat-mini-card .value { font-size: 20px; font-weight: 700; margin-top: 5px; }
+.stat-mini-card .label { font-size: 13px; opacity: 0.9; }
+.stat-mini-card.empty-data { opacity: 0.7; }
+
+/* Secciones de Gráficos */
+.chart-placeholder {
+    height: 250px; background-color: #f7f7f7; border-radius: 10px; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; color: #aaa; font-size: 14px; margin-top: 15px;
+    border: 1px dashed #eee;
+}
+.chart-placeholder p { margin-top: 5px; font-size: 12px; color: #bbb; }
+
+
+/* Progress Section */
+.progress-section {
+    display: grid; grid-template-columns: 1fr 2fr; gap: 15px; margin-top: 25px;
+}
+.progress-section .streak {
+    background: linear-gradient(135deg, #C3A6EE, #FFB6C1); border-radius: 15px; padding: 15px 20px;
+    color: white; text-align: center; display: flex; flex-direction: column; justify-content: center;
+    align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+.progress-section .progress-bar-container {
+    background-color: #f0f0f0; border-radius: 15px; padding: 20px; display: flex; flex-direction: column;
+    justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+.progress-section .streak .days { font-size: 28px; font-weight: 700; }
+.progress-section .streak .label { font-size: 12px; opacity: 0.9; }
+
+.progress-bar { height: 10px; background-color: #ddd; border-radius: 5px; overflow: hidden; margin-top: 10px; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, #FFB6C1, #C3A6EE); border-radius: 5px; transition: width 0.5s ease-in-out; }
+.progress-label { font-size: 14px; font-weight: 600; color: #555; }
+
+
+/* --- EJERCICIOS ESPECÍFICOS --- */
+
+/* Rutina Semanal Macro-cards */
+.macro-ex-card { 
+    border-color: #f0f0f0;
+}
+.macro-ex-card.ejercicios { border-color: var(--ex-color-primary); }
+.macro-ex-card.duracion { border-color: var(--ex-color-tertiary); }
+.macro-ex-card.calorias { border-color: var(--ex-color-tertiary); }
+.macro-ex-card.sugerencias { border-color: var(--ex-color-secondary); }
+
+/* Pestañas de Días de la Semana */
+.day-tabs {
+    display: flex; justify-content: space-between; align-items: center; background-color: white;
+    border-radius: 15px; padding: 10px; box-shadow: var(--joji-card-shadow); margin-bottom: 25px;
+}
+.day-list { display: flex; gap: 5px; overflow-x: auto; }
+.day-tab {
+    background: none; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer;
+    font-size: 13px; color: var(--joji-secondary-text); font-weight: 500; text-align: center;
+    transition: background-color 0.2s, color 0.2s;
+}
+.day-tab.active {
+    background-color: #f0f0f5; color: var(--joji-primary-text); font-weight: 600; box-shadow: 0 1px 3px rgba(0,0,0,0.05) inset;
+}
+.day-tab .count { display: block; font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+
+.add-ex-btn {
+    padding: 10px 20px; background-color: #333; color: white; border: none; border-radius: 10px; 
+    font-weight: 600; cursor: pointer; transition: background-color 0.3s; white-space: nowrap;
+}
+.add-ex-btn:hover { background-color: var(--ex-color-primary); }
+
+/* Contenido del Día */
+.empty-ex-state {
+    text-align: center; padding: 50px 0; border: 2px dashed #eee; border-radius: 15px; margin-top: 20px;
+}
+.empty-ex-state i { font-size: 40px; color: #ccc; margin-bottom: 15px; display: block; }
+.empty-add-btn { background-color: #333; color: white; border: none; padding: 10px 25px; border-radius: 10px; font-weight: 600; cursor: pointer; margin-top: 15px; transition: background-color 0.3s; }
+ 
+/* Sugerencias de Ejercicios */
+.suggestions-section { background-color: var(--ex-color-suggest); padding: 30px; border-radius: 20px; margin-top: 30px; }
+.suggestions-header { margin-bottom: 20px; display: flex; align-items: center; }
+.suggestions-header i { color: #C3A6EE; margin-right: 10px; font-size: 20px; }
+.suggestion-empty-state {
+    text-align: center; padding: 30px 0; background-color: white; border-radius: 15px; border: 1px solid #ddd;
+}
+.suggestion-empty-state i { font-size: 30px; color: #C3A6EE; margin-bottom: 10px; }
+
+/* MODAL DE AGREGAR EJERCICIO */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0, 0, 0, 0.5); 
+    display: none; justify-content: center; align-items: center; z-index: 1000;
+}
+.modal-content {
+    background-color: white; border-radius: 20px; width: 90%; max-width: 750px; max-height: 90vh; 
+    overflow-y: auto; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); position: relative; padding: 30px;
+}
+.modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+.close-btn { background: none; border: none; font-size: 24px; color: #aaa; cursor: pointer; transition: color 0.2s; }
+
+.search-bar { position: relative; margin-bottom: 30px; }
+.search-bar input { width: 100%; padding: 12px 15px 12px 45px; border: 1px solid #eee; border-radius: 12px; font-size: 16px; box-sizing: border-box; }
+.search-bar i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #999; }
+ 
+.filter-section h4 { font-size: 16px; font-weight: 600; color: #333; margin-bottom: 15px; }
+.filter-buttons { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 30px; }
+.filter-btn {
+    padding: 8px 15px; border: 1px solid #eee; background-color: white; border-radius: 8px; 
+    font-size: 14px; color: var(--joji-secondary-text); cursor: pointer; transition: background-color 0.2s, color 0.2s, border-color 0.2s; 
+    display: flex; align-items: center;
+}
+.filter-btn i { margin-right: 6px; }
+.filter-btn.active { background-color: var(--ex-color-filter-active); color: white; border-color: var(--ex-color-filter-active); }
+ 
+.results-header { font-weight: 500; color: var(--joji-secondary-text); margin-bottom: 20px; }
+.results-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.empty-search-results { grid-column: 1 / -1; text-align: center; padding: 50px; border: 2px dashed #eee; border-radius: 15px; }
+.empty-search-results i { font-size: 50px; color: #ccc; margin-bottom: 15px; }
+.macro-ex-card.ejercicios { 
+    background-color: rgba(160, 179, 247, 0.1); 
+    border-color: var(--ex-color-primary); 
+}
+.macro-ex-card.ejercicios i { color: var(--ex-color-primary); }
+
+
+.macro-ex-card.duracion { 
+    background-color: rgba(255, 217, 102, 0.1); 
+    border-color: var(--ex-color-tertiary); 
+}
+.macro-ex-card.duracion i { color: var(--ex-color-tertiary); }
+
+
+.macro-ex-card.calorias { 
+    background-color: rgba(255, 150, 64, 0.1); 
+    border-color: var(--ex-color-tertiary); 
+}
+.macro-ex-card.calorias i { color: var(--ex-color-tertiary); }
+
+
+.macro-ex-card.sugerencias { 
+    background-color: rgba(122, 211, 168, 0.1); 
+        border-color: var(--ex-color-secondary); 
+}
+.macro-ex-card.sugerencias i { color: var(--ex-color-secondary); }
+
+/* Reglas de layout base */
+.macro-ex-grid { 
+    display: flex; 
+    gap: 15px; 
+    margin-bottom: 30px; 
+}
+.macro-ex-card { 
+    flex-grow: 1; 
+    padding: 20px; 
+    border-radius: 15px; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    border: 1px solid #f0f0f0; 
+}
+.macro-card { 
+    min-height: 80px; 
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); 
+    border: 1px solid #f0f0f0;
+}
+
+.macro-card strong { display: block; font-size: 24px; font-weight: 700; margin-top: 5px; }
+
+.macro-card.calorias { background-color: rgba(160, 179, 247, 0.1); border-color: var(--cal-color); }
+.macro-card.proteina { background-color: rgba(109, 195, 163, 0.1); border-color: var(--prot-color); }
+.macro-card.carbohidratos { background-color: rgba(255, 217, 102, 0.1); border-color: var(--carb-color); }
+.macro-card.grasas { background-color: rgba(255, 150, 64, 0.1); border-color: var(--fat-color); }
+
+/* Pestañas de Tiempos de Comida (Desayuno, Almuerzo, Cena) */
+.meal-tabs {
+    display: flex; justify-content: space-between; align-items: center; background-color: white;
+    border-radius: 15px; padding: 10px 20px; box-shadow: var(--joji-card-shadow); margin-bottom: 25px;
+}
+.meal-tabs .tab { background: none; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; }
+.meal-tabs .tab.active { background-color: #f0f0f5; color: var(--joji-primary-text); font-weight: 600; }
+.search-btn {
+    padding: 10px 20px; background-color: #333; color: white; border: none; border-radius: 10px; font-weight: 600;
+    cursor: pointer; transition: background-color 0.3s;
+}
+.search-btn:hover { background-color: var(--prot-color); }
+.filter-buttons-food { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    
+.filter-btn-food {
+    padding: 8px 15px; border: 1px solid #eee; background-color: white; border-radius: 8px; font-size: 14px;
+    color: var(--joji-secondary-text); cursor: pointer; transition: background-color 0.2s, color 0.2s, border-color 0.2s; 
+    display: flex; align-items: center;
+}
+.filter-btn-food.active { background-color: var(--food-filter-active); color: white; border-color: var(--food-filter-active); }
+
+/* Resultados */
+.results-header-food { font-weight: 500; color: var(--joji-secondary-text); margin-bottom: 20px; }
+.results-grid-food { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+.empty-search-results-food {
+    grid-column: 1 / -1; text-align: center; padding: 50px; border: 2px dashed #eee; border-radius: 15px;
+}
+.empty-search-results-food i { font-size: 50px; color: #ccc; margin-bottom: 15px; }
+.empty-search-results-food h4 { font-size: 18px; font-weight: 500; color: #555; margin: 0; }
+
+.plan-nutricional {
+  background: #fff;
+  border-radius: 18px;
+  padding: 25px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+  margin-bottom: 25px;
+}
+
+.plan-nutricional h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #222;
+  margin-bottom: 8px;
+}
+
+.plan-nutricional p {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 18px;
+}
+
+/* --- CONTENEDOR DE LAS TARJETAS --- */
+.nutri-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+}
+
+/* --- TARJETAS INDIVIDUALES --- */
+.nutri-card {
+  flex: 1 1 calc(25% - 18px);
+  padding: 15px 20px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  background: #fff;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+  transition: 0.3s ease;
+  min-width: 200px;
+}
+
+.nutri-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+}
+
+/* --- COLORES DE CADA TARJETA --- */
+.nutri-card.calorias {
+  background: #fff8f0;
+  border-color: #ffe0b2;
+}
+
+.nutri-card.proteina {
+  background: #f4fff7;
+  border-color: #c3f0c9;
+}
+
+.nutri-card.carbohidratos {
+  background: #fffdf3;
+  border-color: #ffe9a7;
+}
+
+.nutri-card.grasas {
+  background: #f6faff;
+  border-color: #b5e3ff;
+}
+
+/* --- TEXTO E ÍCONOS --- */
+.nutri-card span {
+  font-size: 0.95rem;
+  color: #444;
+}
+
+.nutri-card .value {
+  font-weight: 600;
+  color: #111;
+}
+
+.nutri-card i {
+  font-size: 18px;
+  margin-right: 8px;
+}
+
+@media (max-width: 1024px) {
+  .nutri-card {
+    flex: 1 1 calc(50% - 18px);
+  }
+}
+
+@media (max-width: 600px) {
+  .nutri-card {
+    flex: 1 1 100%;
+  }
+}
+.empty-search-btn {
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background-color 0.3s;
+}
+.empty-search-btn:hover {
+    background-color: var(--prot-color); 
+}
+.suggestions-section-empty { 
+    background-color: rgba(160, 179, 247, 0.05); 
+    padding: 30px;
+    border-radius: 20px;
+    margin-top: 30px; 
+    text-align: center;
+    border: 1px solid rgba(160, 179, 247, 0.3);
+}
+
+.suggestions-section-empty i {
+    font-size: 36px;
+    color: #A0B3F7;
+    margin-bottom: 15px;
+}
+
+.suggestions-section-empty h4 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--joji-primary-text);
+}
+
+.suggestions-section-empty p {
+    color: #888;
+    font-size: 14px;
+    margin-top: 5px;
+}

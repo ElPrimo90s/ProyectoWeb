@@ -1,0 +1,167 @@
+     /* Variables y Estilos Generales JOJI */
+        :root {
+            --joji-bg-start: #fbfaff;
+            --joji-bg-end: #f4f7ff;
+            --joji-card-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --joji-input-focus: #C3A6EE;
+            --joji-gradient-primary: linear-gradient(90deg, #FFB6C1, #C3A6EE); /* Pink to Purple */
+            --joji-gradient-secondary: linear-gradient(90deg, #A0B3F7, #C3A6EE); /* Blue to Purple */
+            --joji-font-primary: 'Montserrat', sans-serif;
+            --joji-font-logo: 'Playfair Display', serif;
+        }
+
+        body {
+            font-family: var(--joji-font-primary);
+            background: linear-gradient(135deg, var(--joji-bg-start), var(--joji-bg-end));
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .logo-text {
+            font-family: var(--joji-font-logo);
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            /* Cambiado de FitnessPro a Fitness */
+            background-image: var(--joji-gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Contenedor del Formulario (Tarjeta) */
+        .form-card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--joji-card-shadow);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .form-card h3 {
+            text-align: center;
+            font-weight: 600;
+            color: #555;
+            margin-top: 0;
+            margin-bottom: 30px;
+            font-size: 22px;
+        }
+        
+        /* Estilos de los campos de entrada */
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .input-with-unit, .input-full {
+            display: flex;
+            align-items: center;
+        }
+
+        .input-with-unit input, 
+        .input-full input[type="number"],
+        .input-full select { /* Aplicar estilo a select */
+            flex-grow: 1;
+            padding: 12px 15px;
+            border: 1px solid #eee;
+            box-sizing: border-box;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        /* Estilo para los campos con unidad */
+        .input-with-unit input {
+            border-radius: 10px 0 0 10px;
+            border-right: none;
+        }
+        
+        /* Estilo para los campos sin unidad (como Edad, Meta, Días) */
+        .input-full input, .input-full select {
+            border-radius: 10px;
+            width: 100%;
+        }
+
+
+        .input-with-unit input:focus, 
+        .input-full input:focus, 
+        .input-full select:focus {
+            outline: none;
+            border-color: var(--joji-input-focus);
+            box-shadow: 0 0 0 3px rgba(195, 166, 238, 0.2);
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Estilo específico para el campo de selección (Tipo de Meta) */
+        .input-full select {
+            appearance: none; /* Quitar estilo nativo en algunos navegadores */
+            background-image: url('data:image/svg+xml;utf8,<svg fill="%23666" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 16px;
+        }
+
+
+        .input-unit {
+            padding: 12px 15px;
+            background-color: #f7f7f7;
+            border: 1px solid #eee;
+            border-left: none;
+            border-radius: 0 10px 10px 0;
+            color: #888;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Botones de acción */
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 40px;
+        }
+
+        .save-btn, .back-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s, transform 0.2s;
+            text-decoration: none;
+            text-align: center;
+            flex-grow: 1;
+        }
+        
+        /* Botón Guardar (Primario) */
+        .save-btn {
+            /* Utilizamos el gradiente del botón Guardar Datos */
+            background: var(--joji-gradient-primary); 
+            color: white;
+        }
+
+        .save-btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Botón Cancelar (Secundario) */
+        .back-btn {
+            background-color: #e9e9f4;
+            color: #6a6a99;
+        }
+
+        .back-btn:hover {
+            background-color: #dcdce9;
+        }

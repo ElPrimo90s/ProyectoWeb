@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <title>Register</title>
+    <link rel="stylesheet" href="logins.css">
+</head>
+<body>
+    <div style="text-align: center;">
+        <br>
+      <img src="Imagenes/placeholder.webp" alt="Register Image" width="100" height="50">
+    </div>
+
+    <div>
+        <form action="register.php" method="post" id="formRegistro">
+         <div>
+            <h3 style="text-align: center;">Create your account</h3>
+        </div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" placeholder="Correo Electronico" required>
+
+        <label for="username">Choose a username:</label>
+        <input type="text" id="username" name="username" placeholder="Elige un Nombre" required>
+
+        <label for="password" class="password-label">Create password:</label>
+        <input type="password" id="password" name="password" placeholder="Contraseña" required>
+        <button type="button" class="register-button" onclick="togglePassword('password')">👁️</button>
+        
+
+        <label for="confirm-password" class="password-label">Confirm password:</label>
+        <input type="password" id="confirm-password" name="confirm-password" placeholder="Confirmar Contraseña" required>
+        <button type="button" class="register-button" onclick="togglePassword('confirm-password')">👁️</button >
+        
+        <div style="margin-top:12px;">
+            <button type="button" class="register-button" onclick="abrirModal()">Crear Cuenta</button>
+            <a href="RegistroTest.html" class="register-button">Back to Login</a>
+        </div>
+    </form>
+    </div>
+
+<!-- Modal de Confirmación -->
+<div id="modalConfirm" style="
+    display:none;
+    position: fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background: rgba(0,0,0,0.7);
+    justify-content:center;
+    align-items:center;
+">
+    <div style="
+        background:white;
+        padding:20px;
+        border-radius:10px;
+        width:350px;
+        text-align:center;
+    ">
+
+        <!-- Video Meme -->
+        <video id="videoMeme" width="260" loop style="border-radius:10px; margin-bottom:12px;">
+            <source src="are_you_sure.mp4" type="video/mp4">
+        </video>
+
+        <h3>¿Estás seguro que quieres crear una cuenta?</h3>
+
+        <div style="margin-top:15px;">
+            <button onclick="confirmarRegistro()" class="register-button"
+            >Sí, Crear</button>
+
+            <button onclick="cerrarModal()" class="register-button" >No</button>
+        </div>
+    </div>
+</div>
+
+
+<script>
+function abrirModal() {
+    document.getElementById("modalConfirm").style.display = "flex";
+
+    const video = document.getElementById("videoMeme");
+     video.play().catch(err => {
+        console.log("Autoplay bloqueado, espera interacción del usuario", err);
+    });
+}
+
+function cerrarModal() {
+    document.getElementById("modalConfirm").style.display = "none";
+
+    const video = document.getElementById("videoMeme");
+    video.pause();
+    video.currentTime = 0; // reinicia
+}
+
+function confirmarRegistro() {
+    document.getElementById("formRegistro").submit();
+}
+
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    input.type = (input.type === "password") ? "text" : "password";
+}
+</script>
+
+</body>
+</html>
