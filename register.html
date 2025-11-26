@@ -12,18 +12,21 @@
     </div>
 
     <div>
-        <form action="register.php" method="post" id="formRegistro">
+        <form action="register.php" method="post" id="formRegistro" onsubmit="validarFormulario(event)">
          <div>
             <h3 style="text-align: center;">Create your account</h3>
         </div>
         <label for="email">Email:</label>
-        <input type="email" id="email" name="email" placeholder="Correo Electronico" required>
+        <input type="email" id="email" name="email" placeholder="Ej: usuario@gmail.com" 
+       required
+       pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
 
         <label for="username">Choose a username:</label>
-        <input type="text" id="username" name="username" placeholder="Elige un Nombre" required>
+        <input type="text" id="username" name="username" placeholder="Elige un Nombre"  required>
 
         <label for="password" class="password-label">Create password:</label>
-        <input type="password" id="password" name="password" placeholder="Contraseña" required>
+        <input type="password" id="password" name="password" placeholder="Contraseña" oninput="evaluarContrasena()" required>
+        <span id="strength"></span>
         <button type="button" class="register-button" onclick="togglePassword('password')">👁️</button>
         
 
@@ -99,7 +102,68 @@ function togglePassword(inputId) {
     const input = document.getElementById(inputId);
     input.type = (input.type === "password") ? "text" : "password";
 }
-</script>
 
+
+function evaluarContrasena() {
+    const pass = document.getElementById("password").value;
+    const indicador = document.getElementById("strength");
+
+    if (pass.length === 0) {
+        indicador.innerText = "";
+        indicador.style.color = "";
+        return;
+    }
+
+    let fuerza = 0;
+
+    if (pass.length >= 8) fuerza++;
+    if (/[A-Z]/.test(pass)) fuerza++;
+    if (/[a-z]/.test(pass)) fuerza++;
+    if (/[0-9]/.test(pass)) fuerza++;
+    if (/[\W_]/.test(pass)) fuerza++; // símbolo
+
+    if (fuerza <= 2) {
+        indicador.innerText = "Contraseña débil 😭";
+        indicador.style.color = "red";
+        indicador.dataset.nivel = "débil";
+    } else if (fuerza === 3) {
+        indicador.innerText = "Contraseña media 😐";
+        indicador.style.color = "orange";
+        indicador.dataset.nivel = "media";
+    } else if (fuerza >= 4) {
+        indicador.innerText = "Contraseña fuerte 🔥";
+        indicador.style.color = "green";
+        indicador.dataset.nivel = "fuerte";
+    }
+}
+
+function validarFormulario(event) {
+    const pass1 = document.getElementById("password").value;
+    const pass2 = document.getElementById("confirm-password").value;
+    const fuerza = document.getElementById("strength").dataset.nivel;
+
+    // 1️⃣ Validar contraseñas iguales
+    if (pass1 !== pass2) {
+        alert("Las contraseñas no coinciden.");
+        event.preventDefault();
+        return false;
+    }
+
+    // 2️⃣ Validar que la contraseña sea FUERTE
+    if (fuerza !== "fuerte") {
+        alert("La contraseña debe ser FUERTE para poder registrarte 😭🔥");
+        event.preventDefault();
+        return false;
+    }
+
+    return true;
+}
+
+// Asociar validación al formulario
+document.getElementById("formRegistro").addEventListener("submit", validarFormulario);
+
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

@@ -275,7 +275,7 @@ $conn->close();
                 <div class="name"><?php echo htmlspecialchars($nombre); ?></div>
                 <div class="email"><?php echo htmlspecialchars($correo); ?></div>
                 
-                <a href="configuracion_perfil.html" class="edit-btn">
+                <a href="configuracion_perfil.php" class="edit-btn">
                     Completar Perfil
                 </a>
 <div class="profile-details">
@@ -510,6 +510,8 @@ window.addEventListener('click', (e) => {
 
 
 </script>
+
+
 
 
 </body>

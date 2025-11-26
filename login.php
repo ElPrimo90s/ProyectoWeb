@@ -14,48 +14,78 @@ if ($conn->connect_error) {
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    // Tomar datos del formulario (usando los nombres que hay en la BD: correo, contrasena)
     $correo = isset($_POST['correo']) ? trim($_POST['correo']) : '';
     $contrasena = isset($_POST['contrasena']) ? $_POST['contrasena'] : '';
 
     if ($correo === '' || $contrasena === '') {
-        // Mensaje corto y claro (puedes cambiar por redirección con GET error)
-        die("Por favor completa correo y contraseña.");
+        mostrarAlerta("Campos Vacíos", "Por favor completa correo y contraseña.", "warning");
+        exit();
     }
 
-    // Preparar la consulta para evitar SQL Injection
+    // Consulta preparada
     $stmt = $conn->prepare("SELECT id_usuario, nombre, contrasena FROM usuarios WHERE correo = ?");
     if (!$stmt) {
-        die("Error en la consulta: " . $conn->error);
+        mostrarAlerta("Error", "Error en la consulta SQL.", "error");
+        exit();
     }
+
     $stmt->bind_param("s", $correo);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result && $result->num_rows === 1) {
+
         $user = $result->fetch_assoc();
 
-        // Verificar contraseña (la contraseña en la BD debe haber sido guardada con password_hash)
+        // Verificar contraseña
         if (password_verify($contrasena, $user['contrasena'])) {
-            // Inicio de sesión exitoso
+
+            // Guardar sesión
             $_SESSION['id_usuario'] = $user['id_usuario'];
             $_SESSION['nombre'] = $user['nombre'];
             $_SESSION['correo'] = $correo;
 
-            // Redirigir (temporalmente a perfil.html si aún no es PHP)
-            header("Location: perfil.php");
+            // 🔥 Notificación de éxito
+            mostrarAlerta("Bienvenido", "Inicio de sesión exitoso 😎🔥", "success", "perfil.php");
             exit();
+
         } else {
-            // Contraseña incorrecta
-            echo "Contraseña incorrecta.";
+            mostrarAlerta("Error", "Contraseña incorrecta 😭", "error");
+            exit();
         }
+
     } else {
-        // No existe el correo
-        echo "No existe una cuenta con ese correo.";
+        mostrarAlerta("Cuenta no encontrada", "No existe una cuenta con ese correo.", "error");
+        exit();
     }
 
     $stmt->close();
 }
 
 $conn->close();
+
+
+// ========================================
+// 🔥 FUNCIÓN PARA MOSTRAR SWEETALERT2 🔥
+// ========================================
+function mostrarAlerta($titulo, $mensaje, $icono, $redirect = "RegistroTest.html") {
+    echo "
+    <html>
+    <head>
+        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+    </head>
+    <body>
+        <script>
+            Swal.fire({
+                title: '$titulo',
+                text: '$mensaje',
+                icon: '$icono',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = '$redirect';
+            });
+        </script>
+    </body>
+    </html>";
+}
 ?>

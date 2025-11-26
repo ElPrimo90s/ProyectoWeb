@@ -1,17 +1,44 @@
 <?php
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// =====================================
+// FUNCIÓN UNIVERSAL PARA NOTIFICACIONES
+// =====================================
+function noti($tipo, $mensaje, $redirect = null) {
+    echo "
+    <!DOCTYPE html>
+    <html lang='es'>
+    <head>
+        <meta charset='UTF-8'>
+        <script src='https://cdn.jsdelivr.net/npm/sweetalert2@11'></script>
+    </head>
+    <body>
+    <script>
+        Swal.fire({
+            icon: '$tipo',
+            text: '$mensaje',
+        }).then(() => {
+            " . ($redirect ? "window.location.href='$redirect';" : "window.history.back();") . "
+        });
+    </script>
+    </body>
+    </html>";
+    exit();
+}
+
 // ============================
 // CONFIGURACIÓN DE CONEXIÓN
 // ============================
 $servername = "localhost";
-$username = "root";        // Cambiar si tu usuario es diferente
-$password = "12345678";    // Cambiar tu contraseña
-$dbname = "fitness_app";   // Cambiar al nombre de tu BD
+$username = "root";
+$password = "12345678";
+$dbname   = "fitness_app";
 
 $conn = new mysqli($servername, $username, $password, $dbname);
 
-// Verificar conexión
 if ($conn->connect_error) {
-    die("Error de conexión: " . $conn->connect_error);
+    noti("error", "Error de conexión con la base de datos.");
 }
 
 // ============================
@@ -19,45 +46,67 @@ if ($conn->connect_error) {
 // ============================
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $email       = $_POST["email"];
-    $user_name   = $_POST["username"];
-    $pass        = $_POST["password"];
-    $pass2       = $_POST["confirm-password"];
+    $email     = trim($_POST["email"]);
+    $user_name = trim($_POST["username"]);
+    $pass      = $_POST["password"];
+    $pass2     = $_POST["confirm-password"];
 
-    // 1️⃣ Validar que coincidan las contraseñas
+    // 1. Validar correo sintáctico
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        noti("error", "Correo inválido.");
+    }
+
+    // 2. Validar dominio MX o A (compatibilidad con Windows/XAMPP)
+    $dominio = substr(strrchr($email, "@"), 1);
+
+    if (!checkdnsrr($dominio, "MX") && !checkdnsrr($dominio, "A")) {
+        noti("error", "El dominio del correo no existe o no recibe correos.");
+    }
+
+    // 3. Validar que las contraseñas coincidan
     if ($pass !== $pass2) {
-        die("<h3>Las contraseñas no coinciden</h3>");
+        noti("error", "Las contraseñas no coinciden.");
     }
 
-    // 2️⃣ Validar que el correo no esté registrado
-    $query = "SELECT id_usuario FROM usuarios WHERE correo = '$email'";
-    $result = $conn->query($query);
+    // 4. Validar fuerza mínima
+    $mayus   = preg_match('@[A-Z]@', $pass);
+    $minus   = preg_match('@[a-z]@', $pass);
+    $num     = preg_match('@[0-9]@', $pass);
+    $special = preg_match('@[\W]@', $pass);
 
-    if ($result->num_rows > 0) {
-        die("<h3>El correo ya está registrado</h3>");
+    if (!$mayus || !$minus || !$num || !$special || strlen($pass) < 8) {
+        noti("error", "Contraseña débil. Requiere: 8+ caracteres, mayúscula, minúscula, número y símbolo.");
     }
 
-    // 3️⃣ Encriptar contraseña
+    // 5. Validar que el correo NO esté registrado
+    $stmt = $conn->prepare("SELECT id_usuario FROM usuarios WHERE correo = ?");
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $check = $stmt->get_result();
+
+    if ($check->num_rows > 0) {
+        noti("error", "El correo ya está registrado.");
+    }
+
+    // 6. Encriptar contraseña
     $pass_hashed = password_hash($pass, PASSWORD_DEFAULT);
 
-    // 4️⃣ Insertar en BD
-    $sql = "INSERT INTO usuarios (nombre, correo, contrasena)
-            VALUES ('$user_name', '$email', '$pass_hashed')";
+    // 7. Insertar usuario en la BD
+    $stmt2 = $conn->prepare("INSERT INTO usuarios (nombre, correo, contrasena) VALUES (?, ?, ?)");
+    $stmt2->bind_param("sss", $user_name, $email, $pass_hashed);
 
-    if ($conn->query($sql) === TRUE) {
+    if ($stmt2->execute()) {
 
-        // 5️⃣ Iniciar sesión con el usuario recién creado
+        // Iniciar sesión automáticamente
         session_start();
-        $id_usuario = $conn->insert_id; // ID del nuevo usuario
-        $_SESSION['id_usuario'] = $id_usuario;
+        $_SESSION['id_usuario'] = $stmt2->insert_id;
         $_SESSION['nombre']     = $user_name;
         $_SESSION['correo']     = $email;
 
-        // 6️⃣ Redirigir al perfil
-        header("Location: perfil.php");
-        exit();
+        noti("success", "Cuenta creada con éxito 🎉", "perfil.php");
+
     } else {
-        echo "Error al crear cuenta: " . $conn->error;
+        noti("error", "Error al crear la cuenta. Intenta más tarde.");
     }
 }
 
