@@ -57,9 +57,9 @@ if ($conn->connect_error) {
 
             <div class="macro-ex-grid">
                 <div class="macro-ex-card ejercicios"><i class="fas fa-running"></i> Ejercicios <strong>0</strong></div>
-                <div class="macro-ex-card duracion"><i class="far fa-clock"></i> Duración <strong>0 min</strong></div>
-                <div class="macro-ex-card calorias"><i class="fas fa-fire"></i> Calorías <strong>0 cal</strong></div>
-                <div class="macro-ex-card sugerencias"><div><i class="fas fa-lightbulb"></i> Sugerencias</div><strong>0</strong></div>
+                <div class="macro-ex-card duracion"><i class="far fa-clock"></i> Series <strong>0 </strong></div>
+                <div class="macro-ex-card calorias"><i class="fas fa-fire"></i> Repeticiones <strong>0 </strong></div>
+                
             </div>
         </div>
 
@@ -157,5 +157,205 @@ if ($conn->connect_error) {
 
         </div>
     </div>
+
+    <script>
+
+
+// ==========================
+// MODAL: ABRIR Y CERRAR
+// ==========================
+const addExModal = document.getElementById("add-exercise-modal");
+const openModalBtns = [document.getElementById("add-ex-btn"), document.getElementById("empty-add-ex-btn")];
+const closeModalBtn = document.getElementById("close-modal-btn");
+
+openModalBtns.forEach(btn => {
+    btn.addEventListener("click", () => {
+        const dia = document.querySelector(".day-tab.active").getAttribute("data-day");
+        document.getElementById("modal-title").textContent = "Agregar ejercicio a " + dia;
+        addExModal.classList.add("open");
+        cargarEjercicios(); // carga todos inicialmente
+    });
+});
+
+
+
+closeModalBtn.addEventListener("click", () => {
+    addExModal.classList.remove("open");
+});
+        // ==========================
+// FILTROS Y BÚSQUEDA DE EJERCICIOS
+// ==========================
+function cargarEjercicios(filtroCuerpo = "", filtroEquipo = "", search = "") {
+    fetch(`obtener_ejercicios.php?cuerpo=${encodeURIComponent(filtroCuerpo)}&equipo=${encodeURIComponent(filtroEquipo)}&search=${encodeURIComponent(search)}`)
+        .then(res => res.json())
+        .then(data => mostrarResultadosModal(data))
+        .catch(err => console.log("Error al cargar ejercicios:", err));
+}
+
+// Mostrar ejercicios en modal
+function mostrarResultadosModal(lista) {
+    const container = document.querySelector(".results-grid");
+    const header = document.querySelector(".results-header");
+    container.innerHTML = "";
+    header.textContent = `${lista.length} ejercicios encontrados`;
+
+    if(lista.length === 0){
+        container.innerHTML = `<div class="empty-search-results">
+            <i class="fas fa-search-minus"></i>
+            <h4>No se encontraron ejercicios</h4>
+            <p>Intenta ajustar tus filtros o busca por un nombre diferente.</p>
+        </div>`;
+        return;
+    }
+
+    lista.forEach(ej => {
+        const card = document.createElement("div");
+        card.classList.add("exercise-card");
+        card.innerHTML = `
+            <h4>${ej.nombre}</h4>
+            <p><strong>Grupo muscular:</strong> ${ej.grupo_muscular}</p>
+            <p><strong>Dificultad:</strong> ${ej.dificultad}</p>
+            <p><strong>Tipo:</strong> ${ej.tipo_equipo}</p>
+            <button class="add-exercise-btn" data-id="${ej.id_ejercicio}">Agregar</button>
+        `;
+        container.appendChild(card);
+    });
+}
+
+
+
+// ==========================
+// AGREGAR EJERCICIO A DETALLE_RUTINA
+// ==========================
+document.addEventListener("click", function(e){
+    if(e.target.classList.contains("add-exercise-btn")){
+        const id_ejercicio = e.target.getAttribute("data-id");
+        const dia = document.querySelector(".day-tab.active").getAttribute("data-day");
+
+        fetch("registrar_ejercicio_rutina.php", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: `id_ejercicio=${id_ejercicio}&dia=${encodeURIComponent(dia)}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                cargarEjerciciosAgregados();
+                actualizarTotales();
+                alert("Ejercicio agregado ✅");
+            } else {
+                alert(data.msg);
+            }
+        });
+    }
+});
+
+// ==========================
+// CARGAR EJERCICIOS AGREGADOS POR DÍA
+// ==========================
+function cargarEjerciciosAgregados() {
+    const dia = document.querySelector(".day-tab.active").getAttribute("data-day");
+
+    fetch(`obtener_ejercicios_usuario.php?dia=${encodeURIComponent(dia)}`)
+        .then(res => res.json())
+        .then(data => mostrarEjerciciosAgregados(data))
+        .catch(err => console.log("Error al cargar ejercicios agregados:", err));
+}
+
+function mostrarEjerciciosAgregados(lista) {
+    const container = document.getElementById("added-exercises-container");
+    const emptyState = document.querySelector(".empty-ex-state");
+    container.innerHTML = "";
+
+    if(lista.length === 0){
+        emptyState.style.display = "block";
+        container.style.display = "none";
+        document.getElementById("empty-day-text").textContent = document.querySelector(".day-tab.active").textContent.trim();
+        return;
+    }
+
+    emptyState.style.display = "none";
+    container.style.display = "grid";
+
+    lista.forEach(ej => {
+        const card = document.createElement("div");
+        card.classList.add("exercise-card");
+        card.innerHTML = `
+            <h4>${ej.nombre}</h4>
+            <p><strong>Día:</strong> ${ej.dia_semana}</p>
+            <p><strong>Series:</strong> ${ej.series}</p>
+            <p><strong>Repeticiones:</strong> ${ej.repeticiones}</p>
+            <button class="remove-exercise-btn" data-id="${ej.id_detalle}">Eliminar</button>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// ==========================
+// ELIMINAR EJERCICIO
+// ==========================
+document.addEventListener("click", function(e){
+    if(e.target.classList.contains("remove-exercise-btn")){
+        const id = e.target.getAttribute("data-id");
+        fetch("eliminar_ejercicio_rutina.php", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: `id=${id}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                cargarEjerciciosAgregados();
+                actualizarTotales();
+            }
+        });
+    }
+});
+
+// ==========================
+// ACTUALIZAR TOTALES
+// ==========================
+function actualizarTotales() {
+    const dia = document.querySelector(".day-tab.active").getAttribute("data-day");
+
+    fetch(`totales_rutina.php?dia=${encodeURIComponent(dia)}`)
+        .then(res => res.json())
+        .then(data => {
+            document.querySelector(".macro-ex-card.ejercicios strong").textContent = data.total_ejercicios;
+            document.querySelector(".macro-ex-card.duracion strong").textContent = data.total_series;
+            document.querySelector(".macro-ex-card.calorias strong").textContent = data.total_repeticiones;
+
+            // Actualizar contador de tabs
+            document.querySelectorAll(".day-tab").forEach(tab => {
+                if(tab.getAttribute("data-day") === dia){
+                    tab.querySelector(".count").textContent = data.total_ejercicios;
+                }
+            });
+        });
+}
+
+// ==========================
+// CAMBIAR DÍA ACTIVO
+// ==========================
+document.querySelectorAll(".day-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        document.querySelectorAll(".day-tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+        document.getElementById("day-title").textContent = "Ejercicios de " + tab.textContent.trim();
+        document.getElementById("suggest-day-text").textContent = tab.textContent.trim();
+        cargarEjerciciosAgregados();
+        actualizarTotales();
+    });
+});
+
+// ==========================
+// INICIALIZAR
+// ==========================
+window.addEventListener("load", () => {
+    cargarEjerciciosAgregados();
+    actualizarTotales();
+});
+
+    </script>
 </body>
 </html>

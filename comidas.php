@@ -22,6 +22,8 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 ?>
+
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -98,21 +100,12 @@ if ($conn->connect_error) {
 
 
         <div class="joji-card meal-content">
-
             <h4 id="meal-title">Mis Desayunos</h4>
-
-           
-
             <div class="empty-state">
-
                 <i class="fas fa-coffee" id="empty-state-icon"></i>
-
                 <p id="empty-state-text-1">No has agregado Desayunos</p>
-
                 <p style="margin-top: 5px; color: #aaa;">Busca y agrega comidas a tu plan nutricional</p>
-
                 <button class="empty-search-btn" id="empty-search-meal-btn">+ Buscar Desayunos</button>
-
             </div>
 
         </div>
@@ -194,5 +187,247 @@ if ($conn->connect_error) {
             </div>
         </div>
     </div>
+
+    <script>
+// ==========================
+//   CARGAR COMIDAS DESDE BD
+// ==========================
+function cargarComidas(etiqueta = "") {
+    fetch(`obtener_comidas.php?etiqueta=${encodeURIComponent(etiqueta)}`)
+        .then(res => res.json())
+        .then(data => {
+            // El resto de la lógica para mostrar comidas en el modal
+            if (data.length === 0) {
+                // Necesitas una función mostrarVacio para el modal si la tienes
+                // Aquí solo mostramos resultados si hay
+                return;
+            }
+            mostrarResultados(data);
+        })
+        .catch(err => {
+            console.log("Error al cargar comidas:", err);
+            // mostrarVacio(); // Si tienes un estado vacío para el modal
+        });
+}
+
+// ==========================
+//   MOSTRAR RESULTADOS (EN EL MODAL DE BÚSQUEDA)
+// ==========================
+function mostrarResultados(lista) {
+    const resultsContainer = document.querySelector(".results-grid-food");
+    const resultsHeader = document.querySelector(".results-header-food");
+
+    resultsContainer.innerHTML = "";
+    resultsHeader.textContent = `${lista.length} comidas encontradas`;
+
+    lista.forEach(p => {
+        const card = `
+            <div class="food-card">
+                <h4>${p.nombre}</h4>
+                <div class="nutri-mini">
+                    <p><strong>Calorías:</strong> ${p.calorias} kcal</p>
+                    <p><strong>Proteína:</strong> ${p.proteinas} g</p>
+                    <p><strong>Carbs:</strong> ${p.carbohidratos} g</p>
+                    <p><strong>Grasas:</strong> ${p.grasas} g</p>
+                    <p><strong>Etiqueta:</strong> ${p.etiqueta}</p>
+                </div>
+                <button class="add-food-btn" data-id="${p.id_comida}">Agregar</button>
+            </div>
+        `;
+        resultsContainer.innerHTML += card;
+    });
+}
+
+// ==========================
+//   FILTRO POR ETIQUETA
+// ==========================
+document.querySelectorAll(".filter-btn-food").forEach(btn => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".filter-btn-food").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        const etiqueta = btn.textContent === "Todos" ? "" : btn.textContent;
+        cargarComidas(etiqueta);
+    });
+});
+
+
+// ==========================
+//   ACTUALIZAR TOTALES (Resumen Nutricional)
+// ==========================
+function actualizarTotales() {
+    const momento = document.querySelector(".tab.active").textContent.trim();
+
+    fetch(`totales_momento.php?momento=${encodeURIComponent(momento)}`)
+        .then(res => res.json())
+        .then(data => {
+            document.querySelector(".nutri-card.calorias .value").textContent = data.calorias + " kcal";
+            document.querySelector(".nutri-card.proteina .value").textContent = data.proteinas + " g";
+            document.querySelector(".nutri-card.carbohidratos .value").textContent = data.carbohidratos + " g";
+            document.querySelector(".nutri-card.grasas .value").textContent = data.grasas + " g";
+        });
+}
+
+
+// Escuchar cambios de momento
+document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+        tab.classList.add("active");
+
+        // Actualizar totales para el momento seleccionado
+        actualizarTotales();
+
+        // Actualizar el título y recargar la lista de comidas agregadas
+        document.getElementById("meal-title").textContent = "Mis " + tab.textContent.trim();
+        cargarComidasAgregadas(); // <--- Llamada esencial al cambiar de pestaña
+    });
+});
+
+// ==========================
+//   CARGAR TODAS AL ABRIR MODAL
+// ==========================
+document.getElementById("search-meal-btn").addEventListener("click", () => {
+    // Aquí puedes abrir el modal
+    document.getElementById("search-food-modal").classList.add("open"); 
+    cargarComidas();
+});
+document.getElementById("empty-search-meal-btn").addEventListener("click", () => {
+    // Aquí puedes abrir el modal
+    document.getElementById("search-food-modal").classList.add("open"); 
+    cargarComidas();
+});
+
+// Cerrar Modal
+document.getElementById("close-food-modal-btn").addEventListener("click", () => {
+    document.getElementById("search-food-modal").classList.remove("open");
+});
+
+
+// ==========================
+//   SECCIÓN DE COMIDAS AGREGADAS
+// ==========================
+
+// Crear contenedor de comidas agregadas dentro de la sección meal-content
+let addedFoodsContainer = document.getElementById("added-foods-container");
+if(!addedFoodsContainer){
+    addedFoodsContainer = document.createElement("div");
+    addedFoodsContainer.id = "added-foods-container";
+    // Asegúrate de agregarlo DESPUÉS del empty-state si quieres que se muestre en su lugar
+    document.querySelector(".meal-content").appendChild(addedFoodsContainer);
+}
+
+// Función para cargar comidas agregadas según momento
+function cargarComidasAgregadas() {
+    const momento = document.querySelector(".tab.active").textContent.trim();
+    // 💡 Usa el archivo obtener_comidas_usuario.php
+    fetch(`obtener_comidas_usuario.php?momento=${encodeURIComponent(momento)}`) 
+        .then(res => res.json())
+        .then(data => {
+            mostrarComidasAgregadas(data);
+        })
+        .catch(err => console.log("Error al cargar comidas agregadas:", err));
+}
+
+// Función para mostrar comidas agregadas en forma de card
+function mostrarComidasAgregadas(lista) {
+    const container = document.getElementById("added-foods-container");
+    container.innerHTML = "";
+
+    const emptyState = document.querySelector(".empty-state");
+
+    if (lista.length === 0) {
+        // Muestra el estado vacío si la lista está vacía
+        emptyState.style.display = "block";
+        container.style.display = "none"; // Oculta el contenedor de resultados
+        
+        // Ajustar el icono/texto del estado vacío al momento actual
+        const activeTab = document.querySelector(".tab.active");
+        if(activeTab){
+            const iconClass = activeTab.getAttribute("data-icon");
+            document.getElementById("empty-state-icon").className = `fas fa-${iconClass}`;
+            document.getElementById("empty-state-text-1").textContent = `No has agregado ${activeTab.textContent.trim()}s`;
+            document.getElementById("empty-search-meal-btn").textContent = `+ Buscar ${activeTab.textContent.trim()}s`;
+        }
+        return;
+    } else {
+        // Oculta el estado vacío si hay resultados
+        emptyState.style.display = "none";
+        container.style.display = "grid"; // Muestra el contenedor de resultados
+    }
+
+    lista.forEach(comida => {
+        const card = document.createElement("div");
+        card.classList.add("food-card");
+        card.innerHTML = `
+            <h4>${comida.nombre}</h4>
+            <div class="nutri-mini">
+                <p><strong>Calorías:</strong> ${comida.calorias} kcal</p>
+                <p><strong>Proteína:</strong> ${comida.proteinas} g</p>
+                <p><strong>Carbs:</strong> ${comida.carbohidratos} g</p>
+                <p><strong>Grasas:</strong> ${comida.grasas} g</p>
+                <p><strong>Etiqueta:</strong> ${comida.etiqueta}</p>
+            </div>
+            <button class="remove-food-btn" data-id="${comida.id_comida_usuario}">Eliminar</button> 
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Escuchar clicks para eliminar comida agregada (Mantenemos el bloque, aunque no sea funcional)
+document.addEventListener("click", function(e){
+    if(e.target.classList.contains("remove-food-btn")){
+        const id = e.target.getAttribute("data-id");
+        // Lógica de eliminación (Si el archivo PHP no existe, simplemente fallará aquí)
+        fetch("eliminar_comida_usuario.php", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: `id=${id}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                cargarComidasAgregadas();
+                actualizarTotales();
+            } else {
+                alert("Error: " + data.msg);
+            }
+        })
+        .catch(err => console.log("Error al intentar eliminar:", err));
+    }
+});
+
+// Después de agregar comida, recargar la lista de agregadas
+// Este bloque es crucial para que se muestre inmediatamente después de agregar
+document.addEventListener("click", function(e){
+    if(e.target.classList.contains("add-food-btn")){
+        const id_comida = e.target.getAttribute("data-id");
+        const momento = document.querySelector(".tab.active").textContent.trim();
+
+        fetch("registrar_comida_usuario.php", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: `id_comida=${id_comida}&momento=${encodeURIComponent(momento)}`
+        })
+        .then(res => res.json())
+        .then(data => {
+            if(data.success){
+                // alert("Comida agregada a " + momento); // Puedes quitar este alert si quieres
+                actualizarTotales();
+                cargarComidasAgregadas(); // <--- RECARGA la lista y la muestra
+            } else {
+                alert(data.msg);
+            }
+        })
+        .catch(err => console.log(err));
+    }
+});
+
+// Inicializar al cargar la página (Carga las comidas del momento activo y los totales)
+window.addEventListener("load", () => {
+    cargarComidasAgregadas();
+    actualizarTotales();
+});
+</script>
 </body>
 </html>

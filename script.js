@@ -143,3 +143,61 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
         });
+
+        async function cargarComidas(filtro = "Todos") {
+    const res = await fetch(`get_comidas.php?filtro=${filtro}`);
+    const comidas = await res.json();
+
+    const cont = document.querySelector(".results-grid-food");
+    cont.innerHTML = "";
+
+    comidas.forEach(c => {
+        cont.innerHTML += `
+        <div class="food-card">
+            <img src="${c.url_imagen}">
+            <h4>${c.nombre}</h4>
+            <p>${c.calorias} kcal</p>
+            <p>P:${c.proteinas} G:${c.grasas} C:${c.carbohidratos}</p>
+            <span class="tag">${c.etiqueta}</span>
+            <button onclick="agregarComida(${c.id_comida})">Agregar</button>
+        </div>`;
+    });
+}
+
+async function agregarComida(id_comida) {
+    const momento = document.querySelector(".tab.active").dataset.meal;
+
+    const formData = new FormData();
+    formData.append("id_comida", id_comida);
+    formData.append("momento", momento);
+
+    let res = await fetch("registrar_comida_usuario.php", {
+        method: "POST",
+        body: formData
+    });
+
+    let data = await res.json();
+
+    if (data.success) {
+        cargarComidasUsuario(momento);
+    }
+}
+
+async function cargarComidasUsuario(momento) {
+    const res = await fetch(`get_comidas_usuario.php?momento=${momento}`);
+    const comidas = await res.json();
+
+    const cont = document.querySelector(".meal-content");
+    cont.innerHTML = "";
+
+    comidas.forEach(c => {
+        cont.innerHTML += `
+            <div class="user-food">
+                <img src="${c.url_imagen}">
+                <div>
+                    <h4>${c.nombre}</h4>
+                    <p>${c.calorias} kcal</p>
+                </div>
+            </div>`;
+    });
+}
