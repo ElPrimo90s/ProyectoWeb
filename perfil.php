@@ -247,6 +247,14 @@ $conn->close();
     margin-bottom: 10px;
 }
 
+#graficaMacros,
+#graficaActividad {
+    max-width: 300px;
+    max-height: 300px;
+    margin: 0 auto; /* centrar */
+}
+
+
 </style>
 <body>
 
@@ -414,24 +422,72 @@ fetch('data_evolucion.php')
 </script>
 
             <div class="joji-card chart-card">
-                <h3>Actividad Semanal</h3>
-                <div class="chart-placeholder">
-                    <span>No hay datos de actividad.</span>
-                    <p>Registra tu primer ejercicio para ver tu actividad semanal.</p>
-                </div>
-            </div>
+    <h3>Actividad Semanal</h3>
+    <canvas id="graficaActividad"></canvas>
+</div>
+<script>
+// Cargar gráfica de actividad semanal
+fetch("obtener_actividad_semanal.php")
+    .then(res => res.json())
+    .then(data => {
+
+        // Extraer datos
+        const dias = data.map(d => d.dia_semana);
+        const totales = data.map(d => d.ejercicios_realizados);
+
+        const ctx = document.getElementById("graficaActividad").getContext("2d");
+
+        new Chart(ctx, {
+            type: "bar",
+            data: {
+                labels: dias,
+                datasets: [{
+                    label: "Ejercicios realizados",
+                    data: totales,
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { stepSize: 1 }
+                    }
+                }
+            }
+        });
+    });
+</script>
         </div>
         
-        <div class="chart-grid" style="grid-template-columns: 1fr;">
-            <div class="joji-card chart-card">
-                <h3>Distribución de Macronutrientes</h3>
-                <p style="color: var(--joji-secondary-text); font-size: 13px;">Promedio diario de tu dieta</p>
-                <div class="chart-placeholder" style="height: 300px;">
-                    <span>No hay datos de macronutrientes.</span>
-                    <p>Registra tus comidas para generar tu distribución.</p>
-                </div>
-            </div>
-        </div>
+        <div class="joji-card chart-card">
+    <h3>Distribución de Macronutrientes</h3>
+    <canvas id="graficaMacros"></canvas>
+</div>
+<script>
+fetch("obtener_macros_totales.php")
+    .then(res => res.json())
+    .then(data => {
+
+        const ctx = document.getElementById("graficaMacros").getContext("2d");
+
+        new Chart(ctx, {
+            type: "pie",
+            data: {
+                labels: ["Proteínas", "Carbohidratos", "Grasas"],
+                datasets: [{
+                    data: [
+                        data.total_proteinas || 0,
+                        data.total_carbohidratos || 0,
+                        data.total_grasas || 0
+                    ]
+                }]
+            }
+        });
+    });
+</script>
 
     </div>
 
@@ -507,6 +563,8 @@ window.addEventListener('click', (e) => {
         modalUpdate.style.display = 'none';
     }
 });
+
+
 
 
 </script>
