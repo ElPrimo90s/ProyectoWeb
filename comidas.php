@@ -36,6 +36,193 @@ if ($conn->connect_error) {
     <script src="script.js"></script>
 </head>
 
+<style>
+    /* Contenedor de comidas agregadas */
+#added-foods-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+    padding: 10px;
+}
+
+/* Asegurar que el estado vacío se oculte cuando hay comidas */
+.meal-content .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.meal-content .empty-state i {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+/* Tarjetas de comida */
+.food-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.food-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.food-card h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.nutri-mini {
+    margin-bottom: 15px;
+}
+
+.nutri-mini p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.nutri-mini strong {
+    color: #333;
+}
+
+/* Botones de agregar y eliminar */
+.add-food-btn, .remove-food-btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.add-food-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.add-food-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.remove-food-btn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.remove-food-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+}
+
+/* Cambio */
+
+/* Selector de fecha */
+.date-selector-section {
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.date-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.date-nav-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.date-nav-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.date-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #f8f9fa;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    color: #333;
+}
+
+.date-display i {
+    color: #667eea;
+}
+
+#fecha-seleccionada {
+    border: none;
+    background: transparent;
+    font-weight: 600;
+    color: #333;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+#fecha-texto {
+    font-size: 14px;
+    color: #666;
+}
+
+.quick-dates {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.quick-date-btn {
+    background: white;
+    border: 2px solid #e0e0e0;
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s;
+}
+
+.quick-date-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+}
+
+.quick-date-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+}
+</style>
 <body>
 
 
@@ -56,6 +243,7 @@ if ($conn->connect_error) {
 
 
     <div class="dashboard-container">
+
 
 <div class="plan-nutricional">
   <h3>Plan Nutricional de Hoy</h3>
@@ -107,22 +295,12 @@ if ($conn->connect_error) {
                 <p style="margin-top: 5px; color: #aaa;">Busca y agrega comidas a tu plan nutricional</p>
                 <button class="empty-search-btn" id="empty-search-meal-btn">+ Buscar Desayunos</button>
             </div>
-
+            <div id="added-foods-container"></div>
         </div>
 
        
 
-        <div class="suggestions-section-empty">
-
-            <i class="fas fa-brain"></i>
-
-            <h4>Sugerencias de Comidas en Desarrollo</h4>
-
-            <p>Aún no tenemos suficientes datos o la base de recomendaciones no está conectada.</p>
-
-            <p style="font-size: 12px; margin-top: 15px;">Una vez que completes tu perfil, verás aquí recomendaciones personalizadas.</p>
-
-        </div>
+    
 
        
 
@@ -152,13 +330,7 @@ if ($conn->connect_error) {
 
            
 
-            <div class="search-bar">
-
-                <i class="fas fa-search"></i>
-
-                <input type="text" placeholder="Buscar por nombre o ingrediente (ej: Pollo, Aguacate...)">
-
-            </div>
+            
 
            
             <div class="filter-section">
@@ -309,54 +481,83 @@ document.getElementById("close-food-modal-btn").addEventListener("click", () => 
 // ==========================
 
 // Crear contenedor de comidas agregadas dentro de la sección meal-content
-let addedFoodsContainer = document.getElementById("added-foods-container");
-if(!addedFoodsContainer){
-    addedFoodsContainer = document.createElement("div");
-    addedFoodsContainer.id = "added-foods-container";
-    // Asegúrate de agregarlo DESPUÉS del empty-state si quieres que se muestre en su lugar
-    document.querySelector(".meal-content").appendChild(addedFoodsContainer);
-}
+//let addedFoodsContainer = document.getElementById("added-foods-container");
+//if(!addedFoodsContainer){
+//    addedFoodsContainer = document.createElement("div");
+ //   addedFoodsContainer.id = "added-foods-container";
+ //   // Asegúrate de agregarlo DESPUÉS del empty-state si quieres que se muestre en su lugar
+ //   document.querySelector(".meal-content").appendChild(addedFoodsContainer);
+//}
 
 // Función para cargar comidas agregadas según momento
 function cargarComidasAgregadas() {
     const momento = document.querySelector(".tab.active").textContent.trim();
-    // 💡 Usa el archivo obtener_comidas_usuario.php
+    console.log("🔍 Cargando comidas para momento:", momento);
+    
+    const container = document.getElementById("added-foods-container");
+    const emptyState = document.querySelector(".empty-state");
+    
+    console.log("📦 Container existe:", container !== null);
+    console.log("📦 Empty state existe:", emptyState !== null);
+    
     fetch(`obtener_comidas_usuario.php?momento=${encodeURIComponent(momento)}`) 
-        .then(res => res.json())
+        .then(res => {
+            console.log("📡 Respuesta recibida, status:", res.status);
+            return res.json();
+        })
         .then(data => {
+            console.log("📊 Datos recibidos:", data);
+            console.log("📊 Tipo de datos:", typeof data);
+            console.log("📊 Es array:", Array.isArray(data));
+            console.log("📊 Cantidad de comidas:", data.length);
+            
+            if(data.length > 0) {
+                console.log("✅ Primera comida:", data[0]);
+            }
+            
             mostrarComidasAgregadas(data);
         })
-        .catch(err => console.log("Error al cargar comidas agregadas:", err));
+        .catch(err => {
+            console.error("❌ Error al cargar comidas agregadas:", err);
+        });
 }
 
-// Función para mostrar comidas agregadas en forma de card
+// Función para mostrar comidas agregadas
 function mostrarComidasAgregadas(lista) {
+    console.log("🎨 Iniciando mostrarComidasAgregadas con:", lista.length, "comidas");
+    
     const container = document.getElementById("added-foods-container");
+    const emptyState = document.querySelector(".empty-state");
+    
+    console.log("🎨 Container encontrado:", container !== null);
+    console.log("🎨 Empty state encontrado:", emptyState !== null);
+
+    // Limpiar el contenedor
     container.innerHTML = "";
 
-    const emptyState = document.querySelector(".empty-state");
-
     if (lista.length === 0) {
-        // Muestra el estado vacío si la lista está vacía
-        emptyState.style.display = "block";
-        container.style.display = "none"; // Oculta el contenedor de resultados
+        console.log("⚠️ Lista vacía, mostrando empty state");
+        emptyState.style.display = "flex";
+        container.style.display = "none";
         
-        // Ajustar el icono/texto del estado vacío al momento actual
         const activeTab = document.querySelector(".tab.active");
         if(activeTab){
             const iconClass = activeTab.getAttribute("data-icon");
+            const momento = activeTab.textContent.trim();
             document.getElementById("empty-state-icon").className = `fas fa-${iconClass}`;
-            document.getElementById("empty-state-text-1").textContent = `No has agregado ${activeTab.textContent.trim()}s`;
-            document.getElementById("empty-search-meal-btn").textContent = `+ Buscar ${activeTab.textContent.trim()}s`;
+            document.getElementById("empty-state-text-1").textContent = `No has agregado ${momento}s`;
+            document.getElementById("empty-search-meal-btn").textContent = `+ Buscar ${momento}s`;
         }
         return;
     } else {
-        // Oculta el estado vacío si hay resultados
+        console.log("✅ Hay comidas, ocultando empty state y mostrando grid");
         emptyState.style.display = "none";
-        container.style.display = "grid"; // Muestra el contenedor de resultados
+        container.style.display = "grid";
     }
 
-    lista.forEach(comida => {
+    lista.forEach((comida, index) => {
+        console.log(`➕ Agregando comida ${index + 1}:`, comida.nombre);
+        
         const card = document.createElement("div");
         card.classList.add("food-card");
         card.innerHTML = `
@@ -368,10 +569,12 @@ function mostrarComidasAgregadas(lista) {
                 <p><strong>Grasas:</strong> ${comida.grasas} g</p>
                 <p><strong>Etiqueta:</strong> ${comida.etiqueta}</p>
             </div>
-            <button class="remove-food-btn" data-id="${comida.id_comida_usuario}">Eliminar</button> 
+            <button class="remove-food-btn" data-id="${comida.id_registro}">Eliminar</button> 
         `;
         container.appendChild(card);
     });
+    
+    console.log("🎉 Comidas agregadas al DOM");
 }
 
 // Escuchar clicks para eliminar comida agregada (Mantenemos el bloque, aunque no sea funcional)

@@ -33,6 +33,148 @@ if ($conn->connect_error) {
     <link rel="stylesheet" href="estilos.css">
     <script src="script.js"></script>
 </head>
+
+<style>
+    /* Contenedor de ejercicios agregados */
+#added-exercises-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+    padding: 10px;
+}
+
+/* Estado vacío de ejercicios */
+.empty-ex-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+}
+
+.empty-ex-state i {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 20px;
+}
+
+/* Tarjetas de ejercicio */
+.exercise-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.exercise-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.exercise-card h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.exercise-card p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #666;
+}
+
+.exercise-card strong {
+    color: #333;
+}
+
+/* Botones de agregar y eliminar ejercicios */
+.add-exercise-btn, .remove-exercise-btn {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    margin-top: 10px;
+}
+
+.add-exercise-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.add-exercise-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.remove-exercise-btn {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.remove-exercise-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
+}
+
+
+/* Botones de filtro */
+.filter-btn {
+    background: white;
+    border: 2px solid #e0e0e0;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+    color: #666;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-color: transparent;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.filter-btn i {
+    font-size: 14px;
+}
+
+/* Sección de filtros */
+.filter-section {
+    margin-bottom: 20px;
+}
+
+.filter-section h4 {
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+</style>
 <body>
 
     <div class="header">
@@ -86,24 +228,10 @@ if ($conn->connect_error) {
                 <p style="margin-top: 5px; color: #aaa;">Agrega ejercicios para comenzar tu rutina de <span id="empty-day-text">Lunes</span></p>
                 <button class="empty-add-btn" id="empty-add-ex-btn">+ Agregar primer ejercicio</button>
             </div>
+            <div id="added-exercises-container"></div>
         </div>
-        
-        <div class="suggestions-section">
-            <div class="suggestions-header">
-                <i class="fas fa-venus"></i>
-                <div>
-                    <h4>Ejercicios Sugeridos para <span id="suggest-day-text">Lunes</span></h4>
-                    <p>Ejercicios recomendados que complementan tu rutina actual</p>
-                </div>
-            </div>
 
-            <div class="suggestion-empty-state">
-                <i class="fas fa-robot"></i>
-                <h5>Sin Sugerencias Disponibles</h5>
-                <p>Aún no tenemos suficientes datos o la funcionalidad de recomendaciones no está conectada.</p>
-            </div>
-        </div>
-        
+                   <h4> <span id="suggest-day-text"></span></h4>
     </div>
     
     <div class="modal-overlay" id="add-exercise-modal">
@@ -222,6 +350,80 @@ function mostrarResultadosModal(lista) {
     });
 }
 
+// ==========================
+// FILTROS: PARTE DEL CUERPO Y EQUIPO
+// ==========================
+
+let filtroActualCuerpo = "";
+let filtroActualEquipo = "";
+let busquedaActual = "";
+
+// Obtener todas las secciones de filtros del modal
+const filterSections = document.querySelectorAll("#add-exercise-modal .filter-section");
+
+// Filtros de "Tipo de Equipo" (primera sección)
+if(filterSections[0]) {
+    filterSections[0].querySelectorAll(".filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            // Remover active de todos los botones de esta sección
+            filterSections[0].querySelectorAll(".filter-btn").forEach(b => {
+                b.classList.remove("active");
+            });
+            
+            // Activar el botón clickeado
+            btn.classList.add("active");
+            
+            // Obtener el filtro (eliminar iconos si hay)
+            let textoEquipo = btn.textContent.trim();
+            
+            // Mapear texto del botón a valores de la BD
+            const mapaEquipo = {
+                "Todos": "",
+                "Casa": "Casa",
+                "Máquinas": "Máquinas",
+                "Poleas": "Poleas",
+                "Peso Libre": "Peso Libre",
+                "Cardio": "Cardio"
+            };
+            
+            filtroActualEquipo = mapaEquipo[textoEquipo] || "";
+            
+            // Recargar ejercicios con filtros
+            cargarEjercicios(filtroActualCuerpo, filtroActualEquipo, busquedaActual);
+        });
+    });
+}
+
+// Filtros de "Parte del Cuerpo" (segunda sección)
+if(filterSections[1]) {
+    filterSections[1].querySelectorAll(".filter-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            // Remover active de todos los botones de esta sección
+            filterSections[1].querySelectorAll(".filter-btn").forEach(b => {
+                b.classList.remove("active");
+            });
+            
+            // Activar el botón clickeado
+            btn.classList.add("active");
+            
+            // Obtener el filtro
+            filtroActualCuerpo = btn.textContent.trim() === "Todos" ? "" : btn.textContent.trim();
+            
+            // Recargar ejercicios con filtros
+            cargarEjercicios(filtroActualCuerpo, filtroActualEquipo, busquedaActual);
+        });
+    });
+}
+
+// Barra de búsqueda
+const searchInput = document.querySelector("#add-exercise-modal .search-bar input");
+if(searchInput) {
+    searchInput.addEventListener("input", (e) => {
+        busquedaActual = e.target.value.trim();
+        cargarEjercicios(filtroActualCuerpo, filtroActualEquipo, busquedaActual);
+    });
+}
+
 
 
 // ==========================
@@ -262,15 +464,22 @@ function cargarEjerciciosAgregados() {
         .catch(err => console.log("Error al cargar ejercicios agregados:", err));
 }
 
+
 function mostrarEjerciciosAgregados(lista) {
     const container = document.getElementById("added-exercises-container");
     const emptyState = document.querySelector(".empty-ex-state");
+    
+    // Limpiar contenedor
     container.innerHTML = "";
 
     if(lista.length === 0){
-        emptyState.style.display = "block";
+        emptyState.style.display = "flex";
         container.style.display = "none";
-        document.getElementById("empty-day-text").textContent = document.querySelector(".day-tab.active").textContent.trim();
+        
+        const activeDay = document.querySelector(".day-tab.active");
+        if(activeDay) {
+            document.getElementById("empty-day-text").textContent = activeDay.getAttribute("data-day");
+        }
         return;
     }
 
@@ -282,6 +491,7 @@ function mostrarEjerciciosAgregados(lista) {
         card.classList.add("exercise-card");
         card.innerHTML = `
             <h4>${ej.nombre}</h4>
+            <p><strong>Grupo muscular:</strong> ${ej.grupo_muscular}</p>
             <p><strong>Día:</strong> ${ej.dia_semana}</p>
             <p><strong>Series:</strong> ${ej.series}</p>
             <p><strong>Repeticiones:</strong> ${ej.repeticiones}</p>
@@ -342,7 +552,7 @@ document.querySelectorAll(".day-tab").forEach(tab => {
         document.querySelectorAll(".day-tab").forEach(t => t.classList.remove("active"));
         tab.classList.add("active");
         document.getElementById("day-title").textContent = "Ejercicios de " + tab.textContent.trim();
-        document.getElementById("suggest-day-text").textContent = tab.textContent.trim();
+       // document.getElementById("suggest-day-text").textContent = tab.textContent.trim();
         cargarEjerciciosAgregados();
         actualizarTotales();
     });

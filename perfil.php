@@ -528,16 +528,24 @@ fetch("obtener_macros_totales.php")
 const btnDelete = document.getElementById('btn-delete');
 const modalDelete = document.getElementById('modal-delete');
 const cancelDelete = document.getElementById('cancel-delete');
+const confirmDelete = document.getElementById('confirm-delete');
 
+// Abrir modal
 btnDelete.addEventListener('click', () => {
     modalDelete.style.display = 'flex';
 });
 
+// Cancelar eliminación
 cancelDelete.addEventListener('click', () => {
     modalDelete.style.display = 'none';
 });
 
-// Opcional: cerrar modal al hacer clic fuera
+// Confirmar eliminación - REDIRIGE A eliminar_cuenta.php
+confirmDelete.addEventListener('click', () => {
+    window.location.href = 'eliminar_cuenta.php';
+});
+
+// Cerrar modal al hacer clic fuera
 window.addEventListener('click', (e) => {
     if (e.target === modalDelete) {
         modalDelete.style.display = 'none';
@@ -545,6 +553,7 @@ window.addEventListener('click', (e) => {
 });
 
 
+// Modal de actualizar peso
 const btnUpdate = document.getElementById('btn-update-weight');
 const modalUpdate = document.getElementById('modal-update-weight');
 const cancelUpdate = document.getElementById('cancel-weight');
@@ -563,8 +572,6 @@ window.addEventListener('click', (e) => {
         modalUpdate.style.display = 'none';
     }
 });
-
-
 
 
 </script>

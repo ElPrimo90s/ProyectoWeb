@@ -20,6 +20,30 @@ if ($conn->connect_error) {
     die("Error de conexión: " . $conn->connect_error);
 }
 
+// ===============================================
+// 🔒 1. Verificar si han pasado 7 días desde la última actualización
+// ===============================================
+$sql_last = "SELECT fecha_registro FROM progreso WHERE id_usuario = ? ORDER BY fecha_registro DESC LIMIT 1";
+$stmt_last = $conn->prepare($sql_last);
+$stmt_last->bind_param("i", $id_usuario);
+$stmt_last->execute();
+$result_last = $stmt_last->get_result();
+
+if ($result_last->num_rows > 0) {
+    $row = $result_last->fetch_assoc();
+    $ultima_fecha = strtotime($row["fecha_registro"]);
+    $una_semana = strtotime("+7 days", $ultima_fecha);
+
+    if (time() < $una_semana) {
+        echo "<script>
+            alert('Todavía no han pasado 7 días desde tu última actualización de peso 😭🙏🔥');
+            window.location.href = 'perfil.php';
+        </script>";
+        exit();
+    }
+}
+
+
 // Insertar nuevo peso en la tabla progreso
 $sql = "INSERT INTO progreso (id_usuario, fecha_registro, peso_actual) 
         VALUES (?, ?, ?)";
